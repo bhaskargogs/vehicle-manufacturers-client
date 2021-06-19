@@ -1,21 +1,31 @@
-import React, { useEffect } from 'react';
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { fetchManufacturersFromAPI } from './manufacturersAPI';
-import { fetchManufacturers } from './manufacturersSlice';
+import { fetchManufacturers, loadManufacturers } from './manufacturersSlice';
 
 export const Manufacturers = () => {
+  // const [manufacturers, setManufacturers] = useState([]);
   const manufacturers = useAppSelector(fetchManufacturers);
   const dispatch = useAppDispatch();
-  // useEffect(() => {
-  //   const loadData = () => {
-  //     dispatch(fetchManufacturersFromAPI(''));
-  //   };
-  //   loadData();
-  // }, [dispatch]);
+
+  useEffect(() => {
+    const loadData = () => {
+      dispatch(fetchManufacturersFromAPI(''));
+    };
+    loadData();
+  }, []);
   return (
     <div>
       <div>Manufacturers</div>
-      {/* {console.log(manufacturers)} */}
+      {manufacturers ? (
+        <button onClick={() => dispatch(loadManufacturers(manufacturers))}>
+          Load Data
+        </button>
+      ) : (
+        <p>Hello </p>
+      )}
+      {/* {console.log(`${process.env.REACT_APP_SERVER_API}`)} */}
     </div>
   );
 };
