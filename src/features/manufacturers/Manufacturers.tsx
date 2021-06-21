@@ -15,13 +15,13 @@ import EditIcon from '@material-ui/icons/Edit';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Button, ButtonToolbar } from 'react-bootstrap';
-import { useAppDispatch, useAppSelector } from '../../app/hooks';
-import { AddManufacturerModal } from './AddManufacturerModal';
+import CircularSpinner from './CircularSpinner';
+import { AddManufacturerModal } from './CreateManufacturerModal';
+import { EditManufacturerModal } from './EditManufacturerModal';
 import './Manufacturers.css';
-import { findAllManufacturers } from './manufacturersSlice';
-import { VehicleTypes } from './manufacturerTypes';
+import { ManufacturersList, VehicleTypes } from './manufacturerTypes';
 
 const useRowStyles = makeStyles({
   root: {
@@ -98,7 +98,7 @@ const Row = (props: { row: ReturnType<typeof createData> }) => {
           >
             <DeleteIcon />
           </IconButton>
-          {/* <EditManufacturerModel
+          <EditManufacturerModal
             show={editShowModal}
             onHide={editModalClose}
             id={row.id}
@@ -107,7 +107,7 @@ const Row = (props: { row: ReturnType<typeof createData> }) => {
             mfrid={row.mfrId}
             mfrname={row.mfrName}
             vehicletypes={row.vehicleTypes}
-          /> */}
+          />
         </TableCell>
       </TableRow>
       <TableRow>
@@ -142,16 +142,24 @@ const Row = (props: { row: ReturnType<typeof createData> }) => {
 };
 
 export const Manufacturers = () => {
-  const manufacturers = useAppSelector(state => state.manufacturers.data);
+  const [loading, isLoading] = useState(true);
+  const [manufacturers, setManufacturers] = useState<ManufacturersList[]>([]);
   const [createShowModal, setCreateShowModal] = useState(false);
-  const dispatch = useAppDispatch();
   let createModalClose = () => setCreateShowModal(false);
   useEffect(() => {
     const getManufacturers = () => {
-      dispatch(findAllManufacturers());
+      axios.get(`${process.env.REACT_APP_SERVER_API}`).then(response => {
+        setManufacturers([...response.data]);
+        isLoading(false);
+      });
     };
     getManufacturers();
-  }, [dispatch]);
+  }, [manufacturers]);
+
+  const manufacturersData = useMemo(() => {
+    let computedManufacturers = manufacturers;
+    return computedManufacturers;
+  }, [manufacturers]);
 
   return (
     <div className='container'>
@@ -169,25 +177,29 @@ export const Manufacturers = () => {
           />
         </ButtonToolbar>
       </div>
-      <TableContainer component={Paper}>
-        <Table aria-label='collapsible table'>
-          <TableHead>
-            <TableRow>
-              <TableCell />
-              <TableCell>Country</TableCell>
-              <TableCell>Common Name</TableCell>
-              <TableCell align='right'>ID</TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Action</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {manufacturers.map((manufacturer, index) => (
-              <Row key={index} row={manufacturer} />
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      {!loading ? (
+        <TableContainer component={Paper}>
+          <Table aria-label='collapsible table'>
+            <TableHead>
+              <TableRow>
+                <TableCell />
+                <TableCell>Country</TableCell>
+                <TableCell>Common Name</TableCell>
+                <TableCell align='right'>ID</TableCell>
+                <TableCell>Name</TableCell>
+                <TableCell>Action</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {manufacturersData.map((manufacturer, index) => (
+                <Row key={index} row={manufacturer} />
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      ) : (
+        <CircularSpinner />
+      )}
     </div>
   );
 };

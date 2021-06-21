@@ -11,6 +11,6 @@ export interface ManufacturersResults {
   vehicleTypes: VehicleTypes[];
 }
 
-export interface Manufacturers extends ManufacturersResults {
+export interface ManufacturersList extends ManufacturersResults {
   id: number;
 }

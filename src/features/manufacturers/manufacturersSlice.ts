@@ -2,14 +2,14 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { AppThunk, RootState } from '../../app/store';
 import { fetchManufacturersFromAPI } from './manufacturersAPI';
-import { Manufacturers, ManufacturersResults } from './manufacturerTypes';
+import { ManufacturersList, ManufacturersResults } from './manufacturerTypes';
 
 export interface ManufacturersState {
   results: ManufacturersResults[];
   error: string | null;
   status: 'idle' | 'loading' | 'failed';
   response: string | null;
-  data: Manufacturers[];
+  data: ManufacturersList[];
 }
 
 const initialState: ManufacturersState = {
@@ -26,7 +26,7 @@ export const manufacturersSlice = createSlice({
   name: 'manufacturers',
   initialState,
   reducers: {
-    findManufacturers: (state, action: PayloadAction<Manufacturers[]>) => {
+    findManufacturers: (state, action: PayloadAction<ManufacturersList[]>) => {
       state.data.push(...action.payload);
     },
   },
