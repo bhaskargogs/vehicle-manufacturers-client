@@ -1,17 +1,16 @@
 import React from 'react';
 import './App.css';
-import { Counter } from './features/counter/Counter';
-import { Manufacturers } from './features/manufacturers/Manufacturers';
+import { Loader } from './features/manufacturers/Loader';
 
-function App() {
+const App: React.FC = () => {
   return (
-    <div className='App'>
-      <header className='App-header'>
-        <Counter />
-        <Manufacturers />
-      </header>
+    <div className='container'>
+      <h3 className='justify-content-center d-flex App'>
+        Vehicle Manufacturers App
+      </h3>
+      <Loader />
     </div>
   );
-}
+};
 
 export default App;

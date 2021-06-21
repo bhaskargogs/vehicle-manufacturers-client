@@ -1,14 +1,15 @@
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { AppThunk, RootState } from '../../app/store';
 import { fetchManufacturersFromAPI } from './manufacturersAPI';
-import { ManufacturersResults } from './manufacturerTypes';
+import { Manufacturers, ManufacturersResults } from './manufacturerTypes';
 
 export interface ManufacturersState {
   results: ManufacturersResults[];
   error: string | null;
   status: 'idle' | 'loading' | 'failed';
   response: string | null;
+  data: Manufacturers[];
 }
 
 const initialState: ManufacturersState = {
@@ -16,14 +17,17 @@ const initialState: ManufacturersState = {
   error: null,
   status: 'idle',
   response: '',
+  data: [],
 };
+
+const url = `${process.env.REACT_APP_SERVER_API}`;
 
 export const manufacturersSlice = createSlice({
   name: 'manufacturers',
   initialState,
   reducers: {
-    createManufacturers: (state, action: PayloadAction<string>) => {
-      state.response = action.payload;
+    findManufacturers: (state, action: PayloadAction<Manufacturers[]>) => {
+      state.data.push(...action.payload);
     },
   },
   extraReducers: builder => {
@@ -47,19 +51,15 @@ export const manufacturersSlice = createSlice({
   },
 });
 
-export const { createManufacturers } = manufacturersSlice.actions;
+export const { findManufacturers } = manufacturersSlice.actions;
 
 export const fetchManufacturers = (state: RootState) =>
   state.manufacturers.results;
 
-export const loadManufacturers =
-  (manufacturerDTOS: ManufacturersResults[]): AppThunk =>
-  async (dispatch, getState) => {
-    const response = await axios.post(
-      `${process.env.REACT_APP_SERVER_API}`,
-      manufacturerDTOS
-    );
-    dispatch(createManufacturers(response.data));
+export const findAllManufacturers =
+  (): AppThunk => async (dispatch, getState) => {
+    const response = await axios.get(url);
+    dispatch(findManufacturers(response.data));
   };
 
 export default manufacturersSlice.reducer;

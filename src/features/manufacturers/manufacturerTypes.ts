@@ -6,7 +6,11 @@ export interface VehicleTypes {
 export interface ManufacturersResults {
   country: string;
   mfrCommonName: string;
-  mfrID: number;
+  mfrId: number;
   mfrName: string;
   vehicleTypes: VehicleTypes[];
+}
+
+export interface Manufacturers extends ManufacturersResults {
+  id: number;
 }
