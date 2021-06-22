@@ -22,6 +22,7 @@ import { AddManufacturerModal } from './CreateManufacturerModal';
 import { EditManufacturerModal } from './EditManufacturerModal';
 import './Manufacturers.css';
 import { ManufacturersList, VehicleTypes } from './manufacturerTypes';
+import Navigation from './Navigation';
 
 const useRowStyles = makeStyles({
   root: {
@@ -55,7 +56,7 @@ const deleteManufacturer = async (id: number) => {
   }
 };
 
-const Row = (props: { row: ReturnType<typeof createData> }) => {
+export const Row = (props: { row: ReturnType<typeof createData> }) => {
   const [editShowModal, setEditShowModal] = useState(false);
   const { row } = props;
   const [open, setOpen] = React.useState(false);
@@ -167,15 +168,22 @@ export const Manufacturers = () => {
         <h3 className='justify-content-center d-flex manufacturers'>
           Vehicle Manufacturers App
         </h3>
-        <ButtonToolbar className='justify-content-end mt-1 mb-3'>
-          <Button variant='primary' onClick={() => setCreateShowModal(true)}>
-            Create Manufacturer
-          </Button>
-          <AddManufacturerModal
-            show={createShowModal}
-            onHide={createModalClose}
-          />
-        </ButtonToolbar>
+        <Navigation />
+      </div>
+      <div className='row mt-1 mb-3'>
+        <div className='col-md-2'></div>
+        <div className='col-md-6'></div>
+        <div className='col-md-4'>
+          <ButtonToolbar className='justify-content-end'>
+            <Button variant='primary' onClick={() => setCreateShowModal(true)}>
+              Create Manufacturer
+            </Button>
+            <AddManufacturerModal
+              show={createShowModal}
+              onHide={createModalClose}
+            />
+          </ButtonToolbar>
+        </div>
       </div>
       {!loading ? (
         <TableContainer component={Paper}>
