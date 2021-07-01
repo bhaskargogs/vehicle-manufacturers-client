@@ -20,9 +20,11 @@ import { Button, ButtonToolbar } from 'react-bootstrap';
 import CircularSpinner from './CircularSpinner';
 import { AddManufacturerModal } from './CreateManufacturerModal';
 import { EditManufacturerModal } from './EditManufacturerModal';
+import Header, { Headers } from './Header';
 import './Manufacturers.css';
 import { ManufacturersList, VehicleTypes } from './manufacturerTypes';
 import Navigation from './Navigation';
+import PaginationComponent from './Pagination';
 
 const useRowStyles = makeStyles({
   root: {
@@ -145,22 +147,64 @@ export const Row = (props: { row: ReturnType<typeof createData> }) => {
 export const Manufacturers = () => {
   const [loading, isLoading] = useState(true);
   const [manufacturers, setManufacturers] = useState<ManufacturersList[]>([]);
+  const [totalManufacturers, setTotalManufacturers] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [manufacturersPerPage] = useState(20);
+  const [direction, setDirection] = useState('');
+  const [sortField, setSortField] = useState<keyof ManufacturersList>('id');
   const [createShowModal, setCreateShowModal] = useState(false);
   let createModalClose = () => setCreateShowModal(false);
   useEffect(() => {
     const getManufacturers = () => {
-      axios.get(`${process.env.REACT_APP_SERVER_API}`).then(response => {
-        setManufacturers([...response.data]);
-        isLoading(false);
-      });
+      axios
+        .get(`${process.env.REACT_APP_SERVER_API}`, {
+          params: {
+            pageNo: currentPage - 1,
+            pageSize: manufacturersPerPage,
+            sort: sortField || 'id',
+            direction: direction || 'asc',
+          },
+        })
+        .then(response => {
+          setManufacturers([...response.data.manufacturersList]);
+          setTotalManufacturers(response.data.totalManufacturers);
+          isLoading(false);
+        });
     };
     getManufacturers();
-  }, [manufacturers]);
+  });
+
+  const headers: Headers[] = [
+    { name: '', field: '', sortable: false, align: 'left' },
+    { name: 'Country', field: 'country', sortable: true, align: 'left' },
+    {
+      name: 'Common Name',
+      field: 'mfrCommonName',
+      sortable: true,
+      align: 'left',
+    },
+    { name: 'ID', field: 'mfrId', sortable: true, align: 'right' },
+    { name: 'Name', field: 'mfrName', sortable: true, align: 'left' },
+    { name: 'Action', field: 'action', sortable: false, align: 'left' },
+  ];
 
   const manufacturersData = useMemo(() => {
     let computedManufacturers = manufacturers;
+
+    if (sortField) {
+      computedManufacturers = computedManufacturers.sort((a, b) => {
+        if (a[sortField] < b[sortField]) {
+          return direction === 'asc' ? -1 : 1;
+        }
+        if (a[sortField] > b[sortField]) {
+          return direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+
     return computedManufacturers;
-  }, [manufacturers]);
+  }, [direction, manufacturers, sortField]);
 
   return (
     <div className='container'>
@@ -172,7 +216,18 @@ export const Manufacturers = () => {
       </div>
       <div className='row mt-1 mb-3'>
         <div className='col-md-2'></div>
-        <div className='col-md-6'></div>
+        <div className='col-md-6'>
+          <div className='col-md-5'>
+            <PaginationComponent
+              total={totalManufacturers}
+              itemsPerPage={manufacturersPerPage}
+              currentPage={currentPage}
+              onPageChange={(page: any) => {
+                setCurrentPage(page);
+              }}
+            />
+          </div>
+        </div>
         <div className='col-md-4'>
           <ButtonToolbar className='justify-content-end'>
             <Button variant='primary' onClick={() => setCreateShowModal(true)}>
@@ -188,16 +243,15 @@ export const Manufacturers = () => {
       {!loading ? (
         <TableContainer component={Paper}>
           <Table aria-label='collapsible table'>
-            <TableHead>
-              <TableRow>
-                <TableCell />
-                <TableCell>Country</TableCell>
-                <TableCell>Common Name</TableCell>
-                <TableCell align='right'>ID</TableCell>
-                <TableCell>Name</TableCell>
-                <TableCell>Action</TableCell>
-              </TableRow>
-            </TableHead>
+            <Header
+              headers={headers}
+              onSorting={(field: keyof ManufacturersList, order: string) => {
+                setTimeout(() => {
+                  setDirection(order);
+                  setSortField(field);
+                }, 1000);
+              }}
+            />
             <TableBody>
               {manufacturersData.map((manufacturer, index) => (
                 <Row key={index} row={manufacturer} />
